@@ -4,21 +4,14 @@ import os
 import random
 import quiz
 import subprocess
-
+import styles as s
+import carreras 
 
 pygame.init()
 
 window_size = (640, 640)
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Delphi Enigma")
-
-BLANCO = (255, 255, 255)
-GRIS_CLARO = (200, 200, 200)
-board_color = (245, 245, 220) 
-AZUL = (0, 0, 255) 
-ROJO = (255, 0, 0) 
-VERDE = (0, 255, 0)  
-
 
 ruta_imagen_menu = os.path.join(os.getcwd(), "MainMenuWT.png")
 menu = pygame.image.load(ruta_imagen_menu)
@@ -67,7 +60,8 @@ enemigos = []
 for fila in range(4):
     for col in range(4):
         if (fila, col) != jugador.casilla:
-            enemigos.append(Enemigo((fila, col)))
+            tema = random.choice(["Quiz", "Carreras"])
+            enemigos.append(Enemigo((fila, col), tema))
 
 
 enemigo_seleccionado = None
@@ -86,22 +80,22 @@ def dibujar_tablero():
             x = board_x + col * cell_width
             y = board_y + row * cell_height + 7
             rect = pygame.Rect(x, y, cell_width, cell_height)
-            pygame.draw.rect(screen, board_color, rect)
+            pygame.draw.rect(screen, s.board_color, rect)
             pygame.draw.rect(screen, (0, 0, 0), rect, 1)  
 
             if (row, col) == jugador.casilla:
-                pygame.draw.circle(screen, AZUL, rect.center, cell_width // 4)
+                pygame.draw.circle(screen, s.AZUL, rect.center, cell_width // 4)
 
             for enemigo in enemigos:
                 if enemigo.casilla == (row, col):
-                    color = VERDE if enemigo == enemigo_seleccionado else ROJO
+                    color = s.VERDE if enemigo == enemigo_seleccionado else s.ROJO
                     pygame.draw.circle(screen, color, rect.center, cell_width // 4)
 
 def dibujar_menu():
     screen.blit(menu, (0, 0))
     
     for i, opcion in enumerate(opciones):
-        color = BLANCO if i == opcion_seleccionada else GRIS_CLARO
+        color = s.BLANCO if i == opcion_seleccionada else s.GRIS_CLARO
         texto = font.render(opcion, True, color)
         text_rect = texto.get_rect(center=(window_size[0] // 2, 300 + i * 60))
         screen.blit(texto, text_rect)
@@ -123,11 +117,6 @@ def manejar_eventos_menu():
                 elif opcion_seleccionada == 1:  # Salir
                     pygame.quit()
                     sys.exit()
-
-enemigos_adyacentes_lista = enemigos_adyacentes(jugador, enemigos)
-if enemigos_adyacentes_lista:
-    enemigo_quiz = random.choice(enemigos_adyacentes_lista)
-    enemigo_quiz.tema = "Quiz"
 
 def manejar_eventos_juego():
     global enemigo_seleccionado
@@ -155,13 +144,16 @@ def manejar_eventos_juego():
                     else:
                         enemigo_seleccionado = adyacentes[-1]
             elif evento.key == pygame.K_RETURN:
-                if enemigo_seleccionado and enemigo_seleccionado.tema:
-                    resultado_quiz = quiz.main()  # Llama a quiz y guarda el resultado
-                    if resultado_quiz == 'WIN':
-                        jugador.vidas += 1
-                    elif resultado_quiz == 'LOSE':
-                        pass
-                   
+                if enemigo_seleccionado:
+                    print(f"Enemy selected: {enemigo_seleccionado.tema}")  # Debugging line
+                    if enemigo_seleccionado.tema == "Quiz":
+                        resultado_quiz = quiz.main()  # Call the quiz function
+                        if resultado_quiz == 'WIN':
+                            jugador.vidas += 1
+                    elif enemigo_seleccionado.tema == "Carreras":
+                        resultado_carreras = carreras.main() # Call the carreras function
+                        if resultado_carreras == 'WIN':
+                            jugador.vidas += 1              
 
 
 
